@@ -1,0 +1,176 @@
+<div class="group-details-wrapper">
+  <div class="group-details-container">
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+      </div>
+      <div class="loading-content">
+        <h3 class="loading-title">Chargement du groupe</h3>
+        <p class="loading-subtitle">Veuillez patienter pendant que nous récupérons les informations...</p>
+        <div class="loading-progress">
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage && !isLoading" class="error-state">
+      <div class="error-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="15" y1="9" x2="9" y2="15"></line>
+          <line x1="9" y1="9" x2="15" y2="15"></line>
+        </svg>
+      </div>
+      <div class="error-content">
+        <h3 class="error-title">Erreur de chargement</h3>
+        <p class="error-message">{{ errorMessage }}</p>
+        <div class="error-actions">
+          <button class="retry-button" (click)="retryLoad()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1,4 1,10 7,10"></polyline>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+            </svg>
+            Réessayer
+          </button>
+          <button class="back-button" (click)="goBack()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12,19 5,12 12,5"></polyline>
+            </svg>
+            Retour
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Group Details -->
+    <div *ngIf="group && !isLoading" class="group-details-content">
+
+      <!-- Breadcrumb Navigation -->
+      <nav class="breadcrumb">
+        <a (click)="goBack()" class="breadcrumb-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12,19 5,12 12,5"></polyline>
+          </svg>
+          Groupes
+        </a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">{{ group.name }}</span>
+      </nav>
+
+      <!-- Header Section -->
+      <div class="group-header">
+        <div class="group-icon-section">
+          <div class="group-icon-container">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+        </div>
+        <div class="group-basic-info">
+          <h1 class="group-title">{{ group.name }}</h1>
+          <p class="group-desc">Niveau : {{ group.level }} | Année : {{ group.year }}</p>
+        </div>
+        <div class="group-actions">
+          <button class="action-button primary" (click)="editGroup()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Modifier
+          </button>
+          <button class="action-button danger" (click)="deleteGroup()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3,6 5,6 21,6"></polyline>
+              <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2v2"></path>
+            </svg>
+            Supprimer
+          </button>
+        </div>
+      </div>
+
+      <!-- Group Information Cards -->
+      <div class="group-info-grid">
+        <div class="info-card">
+          <div class="card-header">
+            <div class="card-icon general">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <h3 class="card-title">Informations générales</h3>
+          </div>
+          <div class="card-content">
+            <div class="info-item">
+              <span class="info-label">ID groupe</span>
+              <span class="info-value">
+                <code class="group-id">#{{ group.id }}</code>
+                <button class="copy-button" (click)="copyToClipboard(group.id?.toString() ?? '')" title="Copier l'ID">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                </button>
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Nom</span>
+              <span class="info-value">{{ group.name }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Niveau</span>
+              <span class="info-value">{{ group.level }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Année</span>
+              <span class="info-value">{{ group.year }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="action-section">
+        <div class="action-buttons">
+          <button class="action-btn primary" (click)="editGroup()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Modifier le groupe
+          </button>
+          <button class="action-btn danger" (click)="deleteGroup()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3,6 5,6 21,6"></polyline>
+              <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2v2"></path>
+            </svg>
+            Supprimer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" [class.show]="showToast" [class]="toastType">
+    <div class="toast-icon">
+      <svg *ngIf="toastType === 'success'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20,6 9,17 4,12"></polyline>
+      </svg>
+      <svg *ngIf="toastType === 'error'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="15" y1="9" x2="9" y2="15"></line>
+        <line x1="9" y1="9" x2="15" y2="15"></line>
+      </svg>
+    </div>
+    <span class="toast-message">{{ toastMessage }}</span>
+  </div>
+</div>

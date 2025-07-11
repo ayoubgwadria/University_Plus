@@ -1,0 +1,1467 @@
+// src\app\features\user\components\login\login.component.ts
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AuthService } from 'src/app/services/auth.service';
+
+@Component({
+  selector: 'app-login',
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.css']
+})
+export class LoginComponent implements OnInit {
+  loginForm: FormGroup;
+  error: string | null = null;
+  showSuccess: boolean = false;
+
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) {
+    this.loginForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', Validators.required]
+    });
+  }
+
+  ngOnInit(): void {
+  }
+
+  onSubmit(): void {
+    if (this.loginForm.invalid) {
+      return;
+    }
+
+    const { email, password } = this.loginForm.value;
+
+    this.authService.login(email, password).subscribe({
+      next: () => {
+        this.showSuccess = true;
+        this.error = null;
+        setTimeout(() => {
+          this.router.navigate(['/']);
+        }, 2000);
+      },
+      error: (err) => {
+        this.error = err.error.message;
+        this.showSuccess = false;
+      }
+    });
+  }
+}
+// --- END OF src\app\features\user\components\login\login.component.ts --- -->
+
+<!-- src\app\features\user\components\users-list\users-list.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { UserService } from 'src/app/services/user.service';
+
+@Component({
+  selector: 'app-users-list',
+  templateUrl: './users-list.component.html',
+  styleUrls: ['./users-list.component.css']
+})
+export class UsersListComponent implements OnInit {
+  users: any[] = [];
+
+  constructor(
+    private userService: UserService,
+    private router: Router
+  ) { }
+
+  ngOnInit(): void {
+    this.loadUsers();
+  }
+
+  loadUsers(): void {
+    this.userService.getUsers().subscribe({
+      next: (data) => {
+        this.users = data;
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
+  }
+}
+// --- END OF src\app\features\user\components\users-list\users-list.component.ts --- -->
+
+<!-- src\app\features\user\components\user-details\user-details.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { UserService } from 'src/app/services/user.service';
+
+@Component({
+  selector: 'app-user-details',
+  templateUrl: './user-details.component.html',
+  styleUrls: ['./user-details.component.css']
+})
+export class UserDetailsComponent implements OnInit {
+  user: any;
+  userId: string | null;
+
+  constructor(
+    private userService: UserService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
+    this.userId = this.route.snapshot.paramMap.get('id');
+  }
+
+  ngOnInit(): void {
+    this.loadUserDetails();
+  }
+
+  loadUserDetails(): void {
+    if (this.userId) {
+      this.userService.getUserById(this.userId).subscribe({
+        next: (data) => {
+          this.user = data;
+        },
+        error: (err) => {
+          console.error(err);
+        }
+      });
+    }
+  }
+}
+// --- END OF src\app\features\user\components\user-details\user-details.component.ts --- -->
+
+<!-- src\app\features\user\components\create-user\create-user.component.ts -->
+import { Component } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { UserService } from 'src/app/services/user.service';
+
+@Component({
+  selector: 'app-create-user',
+  templateUrl: './create-user.component.html',
+  styleUrls: ['./create-user.component.css']
+})
+export class CreateUserComponent {
+  user: any = {};
+  successMessage: string = '';
+  errorMessage: string = '';
+
+  constructor(private userService: UserService) { }
+
+  onSubmit(form: NgForm): void {
+    if (form.invalid) {
+      return;
+    }
+
+    this.userService.createUser(this.user).subscribe({
+      next: (data) => {
+        this.successMessage = 'User created successfully!';
+        this.errorMessage = '';
+        form.reset();
+      },
+      error: (err) => {
+        this.errorMessage = 'Error creating user.';
+        this.successMessage = '';
+      }
+    });
+  }
+}
+// --- END OF src\app\features\user\components\create-user\create-user.component.ts --- -->
+
+<!-- src\app\features\task\components\create-task\create-task.component.ts -->
+import { Component } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { TaskService } from 'src/app/services/task.service';
+
+@Component({
+  selector: 'app-create-task',
+  templateUrl: './create-task.component.html',
+  styleUrls: ['./create-task.component.css']
+})
+export class CreateTaskComponent {
+  task: any = {};
+  successMessage: string = '';
+  errorMessage: string = '';
+
+  constructor(private taskService: TaskService) { }
+
+  onSubmit(form: NgForm): void {
+    if (form.invalid) {
+      return;
+    }
+
+    this.taskService.createTask(this.task).subscribe({
+      next: (data) => {
+        this.successMessage = 'Task created successfully!';
+        this.errorMessage = '';
+        form.reset();
+      },
+      error: (err) => {
+        this.errorMessage = 'Error creating task.';
+        this.successMessage = '';
+      }
+    });
+  }
+}
+// --- END OF src\app\features\task\components\create-task\create-task.component.ts --- -->
+
+<!-- src\app\features\task\components\tasks-list\tasks-list.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { TaskService } from 'src/app/services/task.service';
+
+@Component({
+  selector: 'app-tasks-list',
+  templateUrl: './tasks-list.component.html',
+  styleUrls: ['./tasks-list.component.css']
+})
+export class TasksListComponent implements OnInit {
+  tasks: any[] = [];
+  today: string = new Date().toISOString().split('T')[0];
+
+  constructor(
+    private taskService: TaskService,
+    private router: Router
+  ) { }
+
+  ngOnInit(): void {
+    this.loadTasks();
+  }
+
+  loadTasks(): void {
+    this.taskService.getTasks().subscribe({
+      next: (data) => {
+        this.tasks = data;
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
+  }
+}
+// --- END OF src\app\features\task\components\tasks-list\tasks-list.component.ts --- -->
+
+<!-- src\app\features\task\components\task-details\task-details.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { TaskService } from 'src/app/services/task.service';
+
+@Component({
+  selector: 'app-task-details',
+  templateUrl: './task-details.component.html',
+  styleUrls: ['./task-details.component.css']
+})
+export class TaskDetailsComponent implements OnInit {
+  task: any;
+  taskId: string | null;
+
+  constructor(
+    private taskService: TaskService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
+    this.taskId = this.route.snapshot.paramMap.get('id');
+  }
+
+  ngOnInit(): void {
+    this.loadTaskDetails();
+  }
+
+  loadTaskDetails(): void {
+    if (this.taskId) {
+      this.taskService.getTaskById(this.taskId).subscribe({
+        next: (data) => {
+          this.task = data;
+        },
+        error: (err) => {
+          console.error(err);
+        }
+      });
+    }
+  }
+}
+// --- END OF src\app\features\task\components\task-details\task-details.component.ts --- -->
+
+<!-- src\app\features\group\components\create-group\create-group.component.ts -->
+import { Component } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { GroupService } from 'src/app/services/group.service';
+
+@Component({
+  selector: 'app-create-group',
+  templateUrl: './create-group.component.html',
+  styleUrls: ['./create-group.component.css']
+})
+export class CreateGroupComponent {
+  group: any = {};
+  successMessage: string = '';
+  errorMessage: string = '';
+
+  constructor(private groupService: GroupService) { }
+
+  onSubmit(form: NgForm): void {
+    if (form.invalid) {
+      return;
+    }
+
+    this.groupService.createGroup(this.group).subscribe({
+      next: (data) => {
+        this.successMessage = 'Group created successfully!';
+        this.errorMessage = '';
+        form.reset();
+      },
+      error: (err) => {
+        this.errorMessage = 'Error creating group.';
+        this.successMessage = '';
+      }
+    });
+  }
+}
+// --- END OF src\app\features\group\components\create-group\create-group.component.ts --- -->
+
+<!-- src\app\features\group\components\groups-list\groups-list.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { GroupService } from 'src/app/services/group.service';
+
+@Component({
+  selector: 'app-groups-list',
+  templateUrl: './groups-list.component.html',
+  styleUrls: ['./groups-list.component.css']
+})
+export class GroupsListComponent implements OnInit {
+  groups: any[] = [];
+
+  constructor(
+    private groupService: GroupService,
+    private router: Router
+  ) { }
+
+  ngOnInit(): void {
+    this.loadGroups();
+  }
+
+  loadGroups(): void {
+    this.groupService.getGroups().subscribe({
+      next: (data) => {
+        this.groups = data;
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
+  }
+}
+// --- END OF src\app\features\group\components\groups-list\groups-list.component.ts --- -->
+
+<!-- src\app\features\group\components\group-details\group-details.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { GroupService } from 'src/app/services/group.service';
+
+@Component({
+  selector: 'app-group-details',
+  templateUrl: './group-details.component.html',
+  styleUrls: ['./group-details.component.css']
+})
+export class GroupDetailsComponent implements OnInit {
+  group: any;
+  groupId: string | null;
+
+  constructor(
+    private groupService: GroupService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
+    this.groupId = this.route.snapshot.paramMap.get('id');
+  }
+
+  ngOnInit(): void {
+    this.loadGroupDetails();
+  }
+
+  loadGroupDetails(): void {
+    if (this.groupId) {
+      this.groupService.getGroupById(this.groupId).subscribe({
+        next: (data) => {
+          this.group = data;
+        },
+        error: (err) => {
+          console.error(err);
+        }
+      });
+    }
+  }
+}
+// --- END OF src\app\features\group\components\group-details\group-details.component.ts --- -->
+
+<!-- src\app\features\grade\components\create-grade\create-grade.component.ts -->
+import { Component } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { GradeService } from 'src/app/services/grade.service';
+
+@Component({
+  selector: 'app-create-grade',
+  templateUrl: './create-grade.component.html',
+  styleUrls: ['./create-grade.component.css']
+})
+export class CreateGradeComponent {
+  grade: any = {};
+  successMessage: string = '';
+  errorMessage: string = '';
+
+  constructor(private gradeService: GradeService) { }
+
+  onSubmit(form: NgForm): void {
+    if (form.invalid) {
+      return;
+    }
+
+    this.gradeService.createGrade(this.grade).subscribe({
+      next: (data) => {
+        this.successMessage = 'Grade created successfully!';
+        this.errorMessage = '';
+        form.reset();
+      },
+      error: (err) => {
+        this.errorMessage = 'Error creating grade.';
+        this.successMessage = '';
+      }
+    });
+  }
+}
+// --- END OF src\app\features\grade\components\create-grade\create-grade.component.ts --- -->
+
+<!-- src\app\features\grade\components\grads-list\grads-list.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { GradeService } from 'src/app/services/grade.service';
+
+@Component({
+  selector: 'app-grads-list',
+  templateUrl: './grads-list.component.html',
+  styleUrls: ['./grads-list.component.css']
+})
+export class GradsListComponent implements OnInit {
+  grades: any[] = [];
+
+  constructor(
+    private gradeService: GradeService,
+    private router: Router
+  ) { }
+
+  ngOnInit(): void {
+    this.loadGrades();
+  }
+
+  loadGrades(): void {
+    this.gradeService.getGrades().subscribe({
+      next: (data) => {
+        this.grades = data;
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
+  }
+}
+// --- END OF src\app\features\grade\components\grads-list\grads-list.component.ts --- -->
+
+<!-- src\app\features\grade\components\grade-details\grade-details.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { GradeService } from 'src/app/services/grade.service';
+
+@Component({
+  selector: 'app-grade-details',
+  templateUrl: './grade-details.component.html',
+  styleUrls: ['./grade-details.component.css']
+})
+export class GradeDetailsComponent implements OnInit {
+  grade: any;
+  gradeId: string | null;
+
+  constructor(
+    private gradeService: GradeService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
+    this.gradeId = this.route.snapshot.paramMap.get('id');
+  }
+
+  ngOnInit(): void {
+    this.loadGradeDetails();
+  }
+
+  loadGradeDetails(): void {
+    if (this.gradeId) {
+      this.gradeService.getGradeById(this.gradeId).subscribe({
+        next: (data) => {
+          this.grade = data;
+        },
+        error: (err) => {
+          console.error(err);
+        }
+      });
+    }
+  }
+}
+// --- END OF src\app\features\grade\components\grade-details\grade-details.component.ts --- -->
+
+<!-- src\app\features\exam-planning\components\create-exam\create-exam.component.ts -->
+import { Component } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { ExamService } from 'src/app/services/exam.service';
+
+@Component({
+  selector: 'app-create-exam',
+  templateUrl: './create-exam.component.html',
+  styleUrls: ['./create-exam.component.css']
+})
+export class CreateExamComponent {
+  exam: any = {};
+  successMessage: string = '';
+  errorMessage: string = '';
+
+  constructor(private examService: ExamService) { }
+
+  onSubmit(form: NgForm): void {
+    if (form.invalid) {
+      return;
+    }
+
+    this.examService.createExam(this.exam).subscribe({
+      next: (data) => {
+        this.successMessage = 'Exam created successfully!';
+        this.errorMessage = '';
+        form.reset();
+      },
+      error: (err) => {
+        this.errorMessage = 'Error creating exam.';
+        this.successMessage = '';
+      }
+    });
+  }
+}
+// --- END OF src\app\features\exam-planning\components\create-exam\create-exam.component.ts --- -->
+
+<!-- src\app\features\exam-planning\components\exams-list\exams-list.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { ExamService } from 'src/app/services/exam.service';
+
+@Component({
+  selector: 'app-exams-list',
+  templateUrl: './exams-list.component.html',
+  styleUrls: ['./exams-list.component.css']
+})
+export class ExamsListComponent implements OnInit {
+  exams: any[] = [];
+
+  constructor(
+    private examService: ExamService,
+    private router: Router
+  ) { }
+
+  ngOnInit(): void {
+    this.loadExams();
+  }
+
+  loadExams(): void {
+    this.examService.getExams().subscribe({
+      next: (data) => {
+        this.exams = data;
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
+  }
+}
+// --- END OF src\app\features\exam-planning\components\exams-list\exams-list.component.ts --- -->
+
+<!-- src\app\features\exam-planning\components\exam-details\exam-details.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ExamService } from 'src/app/services/exam.service';
+
+@Component({
+  selector: 'app-exam-details',
+  templateUrl: './exam-details.component.html',
+  styleUrls: ['./exam-details.component.css']
+})
+export class ExamDetailsComponent implements OnInit {
+  exam: any;
+  examId: string | null;
+
+  constructor(
+    private examService: ExamService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
+    this.examId = this.route.snapshot.paramMap.get('id');
+  }
+
+  ngOnInit(): void {
+    this.loadExamDetails();
+  }
+
+  loadExamDetails(): void {
+    if (this.examId) {
+      this.examService.getExamById(this.examId).subscribe({
+        next: (data) => {
+          this.exam = data;
+        },
+        error: (err) => {
+          console.error(err);
+        }
+      });
+    }
+  }
+}
+// --- END OF src\app\features\exam-planning\components\exam-details\exam-details.component.ts --- -->
+
+<!-- src\app\features\event\components\create-event\create-event.component.ts -->
+import { Component } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { EventService } from 'src/app/services/event.service';
+
+@Component({
+  selector: 'app-create-event',
+  templateUrl: './create-event.component.html',
+  styleUrls: ['./create-event.component.css']
+})
+export class CreateEventComponent {
+  event: any = {};
+  successMessage: string = '';
+  errorMessage: string = '';
+
+  constructor(private eventService: EventService) { }
+
+  onSubmit(form: NgForm): void {
+    if (form.invalid) {
+      return;
+    }
+
+    this.eventService.createEvent(this.event).subscribe({
+      next: (data) => {
+        this.successMessage = 'Event created successfully!';
+        this.errorMessage = '';
+        form.reset();
+      },
+      error: (err) => {
+        this.errorMessage = 'Error creating event.';
+        this.successMessage = '';
+      }
+    });
+  }
+}
+// --- END OF src\app\features\event\components\create-event\create-event.component.ts --- -->
+
+<!-- src\app\features\event\components\events-list\events-list.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { EventService } from 'src/app/services/event.service';
+
+@Component({
+  selector: 'app-events-list',
+  templateUrl: './events-list.component.html',
+  styleUrls: ['./events-list.component.css']
+})
+export class EventsListComponent implements OnInit {
+  events: any[] = [];
+
+  constructor(
+    private eventService: EventService,
+    private router: Router
+  ) { }
+
+  ngOnInit(): void {
+    this.loadEvents();
+  }
+
+  loadEvents(): void {
+    this.eventService.getEvents().subscribe({
+      next: (data) => {
+        this.events = data;
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
+  }
+}
+// --- END OF src\app\features\event\components\events-list\events-list.component.ts --- -->
+
+<!-- src\app\features\event\components\event-details\event-details.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { EventService } from 'src/app/services/event.service';
+
+@Component({
+  selector: 'app-event-details',
+  templateUrl: './event-details.component.html',
+  styleUrls: ['./event-details.component.css']
+})
+export class EventDetailsComponent implements OnInit {
+  event: any;
+  eventId: string | null;
+
+  constructor(
+    private eventService: EventService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
+    this.eventId = this.route.snapshot.paramMap.get('id');
+  }
+
+  ngOnInit(): void {
+    this.loadEventDetails();
+  }
+
+  loadEventDetails(): void {
+    if (this.eventId) {
+      this.eventService.getEventById(this.eventId).subscribe({
+        next: (data) => {
+          this.event = data;
+        },
+        error: (err) => {
+          console.error(err);
+        }
+      });
+    }
+  }
+}
+// --- END OF src\app\features\event\components\event-details\event-details.component.ts --- -->
+
+<!-- src\app\features\document\components\create-document\create-document.component.ts -->
+import { Component } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { DocumentService } from 'src/app/services/document.service';
+
+@Component({
+  selector: 'app-create-document',
+  templateUrl: './create-document.component.html',
+  styleUrls: ['./create-document.component.css']
+})
+export class CreateDocumentComponent {
+  document: any = {};
+  successMessage: string = '';
+  errorMessage: string = '';
+
+  constructor(private documentService: DocumentService) { }
+
+  onSubmit(form: NgForm): void {
+    if (form.invalid) {
+      return;
+    }
+
+    this.documentService.createDocument(this.document).subscribe({
+      next: (data) => {
+        this.successMessage = 'Document created successfully!';
+        this.errorMessage = '';
+        form.reset();
+      },
+      error: (err) => {
+        this.errorMessage = 'Error creating document.';
+        this.successMessage = '';
+      }
+    });
+  }
+}
+// --- END OF src\app\features\document\components\create-document\create-document.component.ts --- -->
+
+<!-- src\app\features\document\components\documents-list\documents-list.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { DocumentService } from 'src/app/services/document.service';
+
+@Component({
+  selector: 'app-documents-list',
+  templateUrl: './documents-list.component.html',
+  styleUrls: ['./documents-list.component.css']
+})
+export class DocumentsListComponent implements OnInit {
+  documents: any[] = [];
+
+  constructor(
+    private documentService: DocumentService,
+    private router: Router
+  ) { }
+
+  ngOnInit(): void {
+    this.loadDocuments();
+  }
+
+  loadDocuments(): void {
+    this.documentService.getDocuments().subscribe({
+      next: (data) => {
+        this.documents = data;
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
+  }
+}
+// --- END OF src\app\features\document\components\documents-list\documents-list.component.ts --- -->
+
+<!-- src\app\features\document\components\document-details\document-details.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { DocumentService } from 'src/app/services/document.service';
+
+@Component({
+  selector: 'app-document-details',
+  templateUrl: './document-details.component.html',
+  styleUrls: ['./document-details.component.css']
+})
+export class DocumentDetailsComponent implements OnInit {
+  document: any;
+  documentId: string | null;
+
+  constructor(
+    private documentService: DocumentService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
+    this.documentId = this.route.snapshot.paramMap.get('id');
+  }
+
+  ngOnInit(): void {
+    this.loadDocumentDetails();
+  }
+
+  loadDocumentDetails(): void {
+    if (this.documentId) {
+      this.documentService.getDocumentById(this.documentId).subscribe({
+        next: (data) => {
+          this.document = data;
+        },
+        error: (err) => {
+          console.error(err);
+        }
+      });
+    }
+  }
+}
+// --- END OF src\app\features\document\components\document-details\document-details.component.ts --- -->
+
+<!-- src\app\features\course\components\create-course\create-course.component.ts -->
+import { Component } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { CourseService } from 'src/app/services/course.service';
+
+@Component({
+  selector: 'app-create-course',
+  templateUrl: './create-course.component.html',
+  styleUrls: ['./create-course.component.css']
+})
+export class CreateCourseComponent {
+  course: any = {};
+  successMessage: string = '';
+  errorMessage: string = '';
+
+  constructor(private courseService: CourseService) { }
+
+  onSubmit(form: NgForm): void {
+    if (form.invalid) {
+      return;
+    }
+
+    this.courseService.createCourse(this.course).subscribe({
+      next: (data) => {
+        this.successMessage = 'Course created successfully!';
+        this.errorMessage = '';
+        form.reset();
+      },
+      error: (err) => {
+        this.errorMessage = 'Error creating course.';
+        this.successMessage = '';
+      }
+    });
+  }
+}
+// --- END OF src\app\features\course\components\create-course\create-course.component.ts --- -->
+
+<!-- src\app\features\course\components\courses-list\courses-list.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { CourseService } from 'src/app/services/course.service';
+
+@Component({
+  selector: 'app-courses-list',
+  templateUrl: './courses-list.component.html',
+  styleUrls: ['./courses-list.component.css']
+})
+export class CoursesListComponent implements OnInit {
+  courses: any[] = [];
+
+  constructor(
+    private courseService: CourseService,
+    private router: Router
+  ) { }
+
+  ngOnInit(): void {
+    this.loadCourses();
+  }
+
+  loadCourses(): void {
+    this.courseService.getCourses().subscribe({
+      next: (data) => {
+        this.courses = data;
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
+  }
+}
+// --- END OF src\app\features\course\components\courses-list\courses-list.component.ts --- -->
+
+<!-- src\app\features\course\components\course-details\course-details.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { CourseService } from 'src/app/services/course.service';
+
+@Component({
+  selector: 'app-course-details',
+  templateUrl: './course-details.component.html',
+  styleUrls: ['./course-details.component.css']
+})
+export class CourseDetailsComponent implements OnInit {
+  course: any;
+  courseId: string | null;
+
+  constructor(
+    private courseService: CourseService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
+    this.courseId = this.route.snapshot.paramMap.get('id');
+  }
+
+  ngOnInit(): void {
+    this.loadCourseDetails();
+  }
+
+  loadCourseDetails(): void {
+    if (this.courseId) {
+      this.courseService.getCourseById(this.courseId).subscribe({
+        next: (data) => {
+          this.course = data;
+        },
+        error: (err) => {
+          console.error(err);
+        }
+      });
+    }
+  }
+}
+// --- END OF src\app\features\course\components\course-details\course-details.component.ts --- -->
+
+<!-- src\app\features\course-material\components\create-course-material\create-course-material.component.ts -->
+import { Component } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { CourseMaterialService } from 'src/app/services/course-material.service';
+
+@Component({
+  selector: 'app-create-course-material',
+  templateUrl: './create-course-material.component.html',
+  styleUrls: ['./create-course-material.component.css']
+})
+export class CreateCourseMaterialComponent {
+  courseMaterial: any = {};
+  successMessage: string = '';
+  errorMessage: string = '';
+
+  constructor(private courseMaterialService: CourseMaterialService) { }
+
+  onSubmit(form: NgForm): void {
+    if (form.invalid) {
+      return;
+    }
+
+    this.courseMaterialService.createCourseMaterial(this.courseMaterial).subscribe({
+      next: (data) => {
+        this.successMessage = 'Course material created successfully!';
+        this.errorMessage = '';
+        form.reset();
+      },
+      error: (err) => {
+        this.errorMessage = 'Error creating course material.';
+        this.successMessage = '';
+      }
+    });
+  }
+}
+// --- END OF src\app\features\course-material\components\create-course-material\create-course-material.component.ts --- -->
+
+<!-- src\app\features\course-material\components\course-materials-list\course-materials-list.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { CourseMaterialService } from 'src/app/services/course-material.service';
+
+@Component({
+  selector: 'app-course-materials-list',
+  templateUrl: './course-materials-list.component.html',
+  styleUrls: ['./course-materials-list.component.css']
+})
+export class CourseMaterialsListComponent implements OnInit {
+  courseMaterials: any[] = [];
+
+  constructor(
+    private courseMaterialService: CourseMaterialService,
+    private router: Router
+  ) { }
+
+  ngOnInit(): void {
+    this.loadCourseMaterials();
+  }
+
+  loadCourseMaterials(): void {
+    this.courseMaterialService.getCourseMaterials().subscribe({
+      next: (data) => {
+        this.courseMaterials = data;
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
+  }
+}
+// --- END OF src\app\features\course-material\components\course-materials-list\course-materials-list.component.ts --- -->
+
+<!-- src\app\features\course-material\components\course-material-details\course-material-details.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { CourseMaterialService } from 'src/app/services/course-material.service';
+
+@Component({
+  selector: 'app-course-material-details',
+  templateUrl: './course-material-details.component.html',
+  styleUrls: ['./course-material-details.component.css']
+})
+export class CourseMaterialDetailsComponent implements OnInit {
+  courseMaterial: any;
+  courseMaterialId: string | null;
+
+  constructor(
+    private courseMaterialService: CourseMaterialService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
+    this.courseMaterialId = this.route.snapshot.paramMap.get('id');
+  }
+
+  ngOnInit(): void {
+    this.loadCourseMaterialDetails();
+  }
+
+  loadCourseMaterialDetails(): void {
+    if (this.courseMaterialId) {
+      this.courseMaterialService.getCourseMaterialById(this.courseMaterialId).subscribe({
+        next: (data) => {
+          this.courseMaterial = data;
+        },
+        error: (err) => {
+          console.error(err);
+        }
+      });
+    }
+  }
+}
+// --- END OF src\app\features\course-material\components\course-material-details\course-material-details.component.ts --- -->
+
+<!-- src\app\features\class-session\components\create-class-session\create-class-session.component.ts -->
+import { Component } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { ClassSessionService } from 'src/app/services/class-session.service';
+
+@Component({
+  selector: 'app-create-class-session',
+  templateUrl: './create-class-session.component.html',
+  styleUrls: ['./create-class-session.component.css']
+})
+export class CreateClassSessionComponent {
+  classSession: any = {};
+  successMessage: string = '';
+  errorMessage: string = '';
+
+  constructor(private classSessionService: ClassSessionService) { }
+
+  onSubmit(form: NgForm): void {
+    if (form.invalid) {
+      return;
+    }
+
+    this.classSessionService.createClassSession(this.classSession).subscribe({
+      next: (data) => {
+        this.successMessage = 'Class session created successfully!';
+        this.errorMessage = '';
+        form.reset();
+      },
+      error: (err) => {
+        this.errorMessage = 'Error creating class session.';
+        this.successMessage = '';
+      }
+    });
+  }
+}
+// --- END OF src\app\features\class-session\components\create-class-session\create-class-session.component.ts --- -->
+
+<!-- src\app\features\class-session\components\class-sessions-list\class-sessions-list.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { ClassSessionService } from 'src/app/services/class-session.service';
+
+@Component({
+  selector: 'app-class-sessions-list',
+  templateUrl: './class-sessions-list.component.html',
+  styleUrls: ['./class-sessions-list.component.css']
+})
+export class ClassSessionsListComponent implements OnInit {
+  classSessions: any[] = [];
+
+  constructor(
+    private classSessionService: ClassSessionService,
+    private router: Router
+  ) { }
+
+  ngOnInit(): void {
+    this.loadClassSessions();
+  }
+
+  loadClassSessions(): void {
+    this.classSessionService.getClassSessions().subscribe({
+      next: (data) => {
+        this.classSessions = data;
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
+  }
+}
+// --- END OF src\app\features\class-session\components\class-sessions-list\class-sessions-list.component.ts --- -->
+
+<!-- src\app\features\class-session\components\class-session-details\class-session-details.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ClassSessionService } from 'src/app/services/class-session.service';
+
+@Component({
+  selector: 'app-class-session-details',
+  templateUrl: './class-session-details.component.html',
+  styleUrls: ['./class-session-details.component.css']
+})
+export class ClassSessionDetailsComponent implements OnInit {
+  classSession: any;
+  classSessionId: string | null;
+
+  constructor(
+    private classSessionService: ClassSessionService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
+    this.classSessionId = this.route.snapshot.paramMap.get('id');
+  }
+
+  ngOnInit(): void {
+    this.loadClassSessionDetails();
+  }
+
+  loadClassSessionDetails(): void {
+    if (this.classSessionId) {
+      this.classSessionService.getClassSessionById(this.classSessionId).subscribe({
+        next: (data) => {
+          this.classSession = data;
+        },
+        error: (err) => {
+          console.error(err);
+        }
+      });
+    }
+  }
+}
+// --- END OF src\app\features\class-session\components\class-session-details\class-session-details.component.ts --- -->
+
+<!-- src\app\features\chat\chat\chat.component.ts -->
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { ChatService } from 'src/app/services/chat.service';
+
+@Component({
+  selector: 'app-chat',
+  templateUrl: './chat.component.html',
+  styleUrls: ['./chat.component.css']
+})
+export class ChatComponent implements OnInit {
+  messages: any[] = [];
+  newMessage: string = '';
+  @ViewChild('messagesContainer') messagesContainer!: ElementRef;
+
+  constructor(private chatService: ChatService) { }
+
+  ngOnInit(): void {
+    this.loadMessages();
+  }
+
+  loadMessages(): void {
+    this.chatService.getMessages().subscribe({
+      next: (data) => {
+        this.messages = data;
+        this.scrollToBottom();
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
+  }
+
+  sendMessage(): void {
+    if (!this.newMessage.trim()) {
+      return;
+    }
+
+    this.chatService.sendMessage(this.newMessage).subscribe({
+      next: (data) => {
+        this.messages.push(data);
+        this.newMessage = '';
+        this.scrollToBottom();
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
+  }
+
+  scrollToBottom(): void {
+    setTimeout(() => {
+      this.messagesContainer.nativeElement.scrollTop = this.messagesContainer.nativeElement.scrollHeight;
+    }, 100);
+  }
+}
+// --- END OF src\app\features\chat\chat\chat.component.ts --- -->
+
+<!-- src\app\features\academic-calendar-entry\components\create-academic-calendar\create-academic-calendar.component.ts -->
+import { Component } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { AcademicCalendarService } from 'src/app/services/academic-calendar.service';
+
+@Component({
+  selector: 'app-create-academic-calendar',
+  templateUrl: './create-academic-calendar.component.html',
+  styleUrls: ['./create-academic-calendar.component.css']
+})
+export class CreateAcademicCalendarComponent {
+  academicCalendar: any = {};
+  successMessage: string = '';
+  errorMessage: string = '';
+
+  constructor(private academicCalendarService: AcademicCalendarService) { }
+
+  onSubmit(form: NgForm): void {
+    if (form.invalid) {
+      return;
+    }
+
+    this.academicCalendarService.createAcademicCalendar(this.academicCalendar).subscribe({
+      next: (data) => {
+        this.successMessage = 'Academic calendar entry created successfully!';
+        this.errorMessage = '';
+        form.reset();
+      },
+      error: (err) => {
+        this.errorMessage = 'Error creating academic calendar entry.';
+        this.successMessage = '';
+      }
+    });
+  }
+}
+// --- END OF src\app\features\academic-calendar-entry\components\create-academic-calendar\create-academic-calendar.component.ts --- -->
+
+<!-- src\app\features\academic-calendar-entry\components\academic-calendars-list\academic-calendars-list.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { AcademicCalendarService } from 'src/app/services/academic-calendar.service';
+
+@Component({
+  selector: 'app-academic-calendars-list',
+  templateUrl: './academic-calendars-list.component.html',
+  styleUrls: ['./academic-calendars-list.component.css']
+})
+export class AcademicCalendarsListComponent implements OnInit {
+  academicCalendars: any[] = [];
+
+  constructor(
+    private academicCalendarService: AcademicCalendarService,
+    private router: Router
+  ) { }
+
+  ngOnInit(): void {
+    this.loadAcademicCalendars();
+  }
+
+  loadAcademicCalendars(): void {
+    this.academicCalendarService.getAcademicCalendars().subscribe({
+      next: (data) => {
+        this.academicCalendars = data;
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
+  }
+}
+// --- END OF src\app\features\academic-calendar-entry\components\academic-calendars-list\academic-calendars-list.component.ts --- -->
+
+<!-- src\app\features\academic-calendar-entry\components\academic-calendar-details\academic-calendar-details.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AcademicCalendarService } from 'src/app/services/academic-calendar.service';
+
+@Component({
+  selector: 'app-academic-calendar-details',
+  templateUrl: './academic-calendar-details.component.html',
+  styleUrls: ['./academic-calendar-details.component.css']
+})
+export class AcademicCalendarDetailsComponent implements OnInit {
+  academicCalendar: any;
+  academicCalendarId: string | null;
+
+  constructor(
+    private academicCalendarService: AcademicCalendarService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
+    this.academicCalendarId = this.route.snapshot.paramMap.get('id');
+  }
+
+  ngOnInit(): void {
+    this.loadAcademicCalendarDetails();
+  }
+
+  loadAcademicCalendarDetails(): void {
+    if (this.academicCalendarId) {
+      this.academicCalendarService.getAcademicCalendarById(this.academicCalendarId).subscribe({
+        next: (data) => {
+          this.academicCalendar = data;
+        },
+        error: (err) => {
+          console.error(err);
+        }
+      });
+    }
+  }
+}
+// --- END OF src\app\features\academic-calendar-entry\components\academic-calendar-details\academic-calendar-details.component.ts --- -->
+
+<!-- src\app\features\absence\components\create-absence\create-absence.component.ts -->
+import { Component } from '@angular/core';
+import { NgForm } from '@angular/forms';
+import { AbsenceService } from 'src/app/services/absence.service';
+
+@Component({
+  selector: 'app-create-absence',
+  templateUrl: './create-absence.component.html',
+  styleUrls: ['./create-absence.component.css']
+})
+export class CreateAbsenceComponent {
+  absence: any = {};
+  successMessage: string = '';
+  errorMessage: string = '';
+
+  constructor(private absenceService: AbsenceService) { }
+
+  onSubmit(form: NgForm): void {
+    if (form.invalid) {
+      return;
+    }
+
+    this.absenceService.createAbsence(this.absence).subscribe({
+      next: (data) => {
+        this.successMessage = 'Absence recorded successfully!';
+        this.errorMessage = '';
+        form.reset();
+      },
+      error: (err) => {
+        this.errorMessage = 'Error recording absence.';
+        this.successMessage = '';
+      }
+    });
+  }
+}
+// --- END OF src\app\features\absence\components\create-absence\create-absence.component.ts --- -->
+
+<!-- src\app\features\absence\components\absences-list\absences-list.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { AbsenceService } from 'src/app/services/absence.service';
+
+@Component({
+  selector: 'app-absences-list',
+  templateUrl: './absences-list.component.html',
+  styleUrls: ['./absences-list.component.css']
+})
+export class AbsencesListComponent implements OnInit {
+  absences: any[] = [];
+
+  constructor(
+    private absenceService: AbsenceService,
+    private router: Router
+  ) { }
+
+  ngOnInit(): void {
+    this.loadAbsences();
+  }
+
+  loadAbsences(): void {
+    this.absenceService.getAbsences().subscribe({
+      next: (data) => {
+        this.absences = data;
+      },
+      error: (err) => {
+        console.error(err);
+      }
+    });
+  }
+}
+// --- END OF src\app\features\absence\components\absences-list\absences-list.component.ts --- -->
+
+<!-- src\app\features\absence\components\absence-details\absence-details.component.ts -->
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AbsenceService } from 'src/app/services/absence.service';
+
+@Component({
+  selector: 'app-absence-details',
+  templateUrl: './absence-details.component.html',
+  styleUrls: ['./absence-details.component.css']
+})
+export class AbsenceDetailsComponent implements OnInit {
+  absence: any;
+  absenceId: string | null;
+
+  constructor(
+    private absenceService: AbsenceService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
+    this.absenceId = this.route.snapshot.paramMap.get('id');
+  }
+
+  ngOnInit(): void {
+    this.loadAbsenceDetails();
+  }
+
+  loadAbsenceDetails(): void {
+    if (this.absenceId) {
+      this.absenceService.getAbsenceById(this.absenceId).subscribe({
+        next: (data) => {
+          this.absence = data;
+        },
+        error: (err) => {
+          console.error(err);
+        }
+      });
+    }
+  }
+}
+// --- END OF src\app\features\absence\components\absence-details\absence-details.component.ts --- -->

@@ -1,0 +1,298 @@
+<div class="form-wrapper">
+  <div class="form-container">
+    <div class="form-header">
+      <div class="header-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+      <h2 class="form-title">Créer une nouvelle note</h2>
+      <p class="form-subtitle">Remplissez les informations ci-dessous pour ajouter une note</p>
+    </div>
+
+    <form [formGroup]="gradeForm" (ngSubmit)="onSubmit()" class="grade-form">
+      <!-- Type Field -->
+      <div class="form-group">
+        <label for="type" class="form-label">
+          <span class="label-text">Type de note</span>
+          <span class="required-indicator">*</span>
+        </label>
+        <div class="input-wrapper" [class.error]="gradeForm.get('type')?.invalid && gradeForm.get('type')?.touched" [class.success]="gradeForm.get('type')?.valid && gradeForm.get('type')?.touched">
+          <div class="input-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <select
+            id="type"
+            formControlName="type"
+            required
+            class="form-input"
+          >
+            <option value="" disabled>Sélectionnez un type</option>
+            <option *ngFor="let type of gradeTypes" [value]="type">{{ type }}</option>
+          </select>
+        </div>
+        <div class="error-messages" *ngIf="gradeForm.get('type')?.invalid && gradeForm.get('type')?.touched">
+          <small class="error-text">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            Le type est requis.
+          </small>
+        </div>
+      </div>
+
+      <!-- Value Field -->
+      <div class="form-group">
+        <label for="value" class="form-label">
+          <span class="label-text">Note obtenue</span>
+          <span class="required-indicator">*</span>
+        </label>
+        <div class="input-wrapper" [class.error]="gradeForm.get('value')?.invalid && gradeForm.get('value')?.touched" [class.success]="gradeForm.get('value')?.valid && gradeForm.get('value')?.touched">
+          <div class="input-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <input
+            id="value"
+            type="number"
+            formControlName="value"
+            required
+            min="0"
+            class="form-input"
+            placeholder="Note obtenue"
+          />
+        </div>
+        <div class="error-messages" *ngIf="gradeForm.get('value')?.invalid && gradeForm.get('value')?.touched">
+          <small class="error-text">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            La note est requise et doit être positive.
+          </small>
+        </div>
+      </div>
+
+      <!-- Out Of Field -->
+      <div class="form-group">
+        <label for="outOf" class="form-label">
+          <span class="label-text">Note sur</span>
+          <span class="required-indicator">*</span>
+        </label>
+        <div class="input-wrapper" [class.error]="gradeForm.get('outOf')?.invalid && gradeForm.get('outOf')?.touched" [class.success]="gradeForm.get('outOf')?.valid && gradeForm.get('outOf')?.touched">
+          <div class="input-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <input
+            id="outOf"
+            type="number"
+            formControlName="outOf"
+            required
+            min="0"
+            class="form-input"
+            placeholder="Note sur"
+          />
+        </div>
+        <div class="error-messages" *ngIf="gradeForm.get('outOf')?.invalid && gradeForm.get('outOf')?.touched">
+          <small class="error-text">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            Ce champ est requis et doit être positif.
+          </small>
+        </div>
+      </div>
+
+      <!-- Date Field -->
+      <div class="form-group">
+        <label for="date" class="form-label">
+          <span class="label-text">Date</span>
+          <span class="required-indicator">*</span>
+        </label>
+        <div class="input-wrapper" [class.error]="gradeForm.get('date')?.invalid && gradeForm.get('date')?.touched" [class.success]="gradeForm.get('date')?.valid && gradeForm.get('date')?.touched">
+          <div class="input-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <input
+            id="date"
+            type="date"
+            formControlName="date"
+            required
+            class="form-input"
+          />
+        </div>
+        <div class="error-messages" *ngIf="gradeForm.get('date')?.invalid && gradeForm.get('date')?.touched">
+          <small class="error-text">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            La date est requise.
+          </small>
+        </div>
+      </div>
+
+      <!-- Student ID Field -->
+      <div class="form-group">
+        <label for="studentId" class="form-label">
+          <span class="label-text">ID étudiant</span>
+          <span class="required-indicator">*</span>
+        </label>
+        <div class="input-wrapper" [class.error]="gradeForm.get('studentId')?.invalid && gradeForm.get('studentId')?.touched" [class.success]="gradeForm.get('studentId')?.valid && gradeForm.get('studentId')?.touched">
+          <div class="input-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="7" r="4"></circle>
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            </svg>
+          </div>
+          <input
+            id="studentId"
+            type="number"
+            formControlName="studentId"
+            required
+            min="1"
+            class="form-input"
+            placeholder="ID étudiant"
+          />
+        </div>
+        <div class="error-messages" *ngIf="gradeForm.get('studentId')?.invalid && gradeForm.get('studentId')?.touched">
+          <small class="error-text">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            L'ID étudiant est requis.
+          </small>
+        </div>
+      </div>
+
+      <!-- Course ID Field -->
+      <div class="form-group">
+        <label for="courseId" class="form-label">
+          <span class="label-text">ID du cours</span>
+          <span class="required-indicator">*</span>
+        </label>
+        <div class="input-wrapper" [class.error]="gradeForm.get('courseId')?.invalid && gradeForm.get('courseId')?.touched" [class.success]="gradeForm.get('courseId')?.valid && gradeForm.get('courseId')?.touched">
+          <div class="input-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <input
+            id="courseId"
+            type="number"
+            formControlName="courseId"
+            required
+            min="1"
+            class="form-input"
+            placeholder="ID du cours"
+          />
+        </div>
+        <div class="error-messages" *ngIf="gradeForm.get('courseId')?.invalid && gradeForm.get('courseId')?.touched">
+          <small class="error-text">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            L'ID du cours est requis.
+          </small>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button
+          type="button"
+          class="secondary-button"
+          (click)="onReset()"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="1,4 1,10 7,10"></polyline>
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+          </svg>
+          Réinitialiser
+        </button>
+        <button
+          type="submit"
+          class="primary-button"
+          [disabled]="gradeForm.invalid || isSubmitting"
+          [class.loading]="isSubmitting"
+        >
+          <span class="button-content" *ngIf="!isSubmitting">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <circle cx="12" cy="7" r="4"></circle>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            Créer la note
+          </span>
+          <div class="loading-content" *ngIf="isSubmitting">
+            <div class="spinner"></div>
+            Création en cours...
+          </div>
+        </button>
+      </div>
+    </form>
+
+    <!-- Messages -->
+    <div class="form-messages">
+      <div class="success-message" *ngIf="successMessage">
+        <div class="message-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22,4 12,14.01 9,11.01"></polyline>
+          </svg>
+        </div>
+        <div class="message-content">
+          <h4>Succès !</h4>
+          <p>{{ successMessage }}</p>
+        </div>
+      </div>
+
+      <div class="error-message" *ngIf="errorMessage">
+        <div class="message-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+        </div>
+        <div class="message-content">
+          <h4>Erreur</h4>
+          <p>{{ errorMessage }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Progress -->
+    <div class="form-progress">
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="getFormProgress()"></div>
+      </div>
+      <p class="progress-text">{{ getFormProgress() }}% complété</p>
+    </div>
+  </div>
+</div>

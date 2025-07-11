@@ -1,0 +1,155 @@
+<div class="create-absence-wrapper">
+  <div class="create-absence-container">
+    <div class="form-card">
+      <div class="form-header">
+        <h2>Créer une absence</h2>
+        <p class="form-subtitle">
+          Remplissez les informations pour ajouter une nouvelle absence.
+        </p>
+      </div>
+
+      <form
+        (ngSubmit)="createAbsence()"
+        #absenceForm="ngForm"
+        autocomplete="off"
+      >
+        <div class="form-group">
+          <label for="date"
+            >Date <span class="required">*</span
+          ></label>
+          <input
+            type="date"
+            id="date"
+            name="date"
+            [(ngModel)]="absence.date"
+            required
+            class="form-control"
+            [class.invalid]="
+              absenceForm.submitted && !absence.date
+            "
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="reason"
+            >Motif <span class="required">*</span
+          ></label>
+          <input
+            type="text"
+            id="reason"
+            name="reason"
+            [(ngModel)]="absence.reason"
+            required
+            minlength="3"
+            class="form-control"
+            [class.invalid]="
+              absenceForm.submitted &&
+              (!absence.reason || absence.reason.length < 3)
+            "
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="studentId"
+              >ID Étudiant <span class="required">*</span
+            ></label>
+            <input
+              type="number"
+              id="studentId"
+              name="studentId"
+              [(ngModel)]="absence.studentId"
+              required
+              min="1"
+              class="form-control"
+              [class.invalid]="
+                absenceForm.submitted && (!absence.studentId || absence.studentId < 1)
+              "
+            />
+          </div>
+          <div class="form-group">
+            <label for="courseId"
+              >ID Cours <span class="required">*</span
+            ></label>
+            <input
+              type="number"
+              id="courseId"
+              name="courseId"
+              [(ngModel)]="absence.courseId"
+              required
+              min="1"
+              class="form-control"
+              [class.invalid]="
+                absenceForm.submitted && (!absence.courseId || absence.courseId < 1)
+              "
+            />
+          </div>
+          <div class="form-group">
+            <label for="sessionId"
+              >ID Séance <span class="required">*</span
+            ></label>
+            <input
+              type="number"
+              id="sessionId"
+              name="sessionId"
+              [(ngModel)]="absence.sessionId"
+              required
+              min="1"
+              class="form-control"
+              [class.invalid]="
+                absenceForm.submitted && (!absence.sessionId || absence.sessionId < 1)
+              "
+            />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button
+            type="submit"
+            class="submit-btn"
+            [disabled]="submitting || absenceForm.invalid"
+          >
+            {{ submitting ? 'Création...' : 'Créer l\'absence' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div *ngIf="submitting" class="loading-overlay">
+    <div class="spinner"></div>
+    <span>Création en cours...</span>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" [class.show]="showToast" [class]="toastType">
+    <div class="toast-icon">
+      <svg
+        *ngIf="toastType === 'success'"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <polyline points="20,6 9,17 4,12"></polyline>
+      </svg>
+      <svg
+        *ngIf="toastType === 'error'"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="15" y1="9" x2="9" y2="15"></line>
+        <line x1="9" y1="9" x2="15" y2="15"></line>
+      </svg>
+    </div>
+    <span class="toast-message">{{ toastMessage }}</span>
+  </div>
+</div>

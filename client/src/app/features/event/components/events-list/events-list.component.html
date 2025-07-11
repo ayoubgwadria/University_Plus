@@ -1,0 +1,219 @@
+<div class="events-list-wrapper">
+  <div class="events-list-container">
+
+    <!-- Header Section -->
+    <div class="page-header">
+      <div class="header-content">
+        <div class="header-info">
+          <h1 class="page-title">Gestion des événements</h1>
+          <p class="page-subtitle">Gérez et consultez tous les événements du système</p>
+        </div>
+        <div class="header-actions">
+          <button class="action-button primary" (click)="createEvent()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <circle cx="12" cy="7" r="4"></circle>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            Nouvel événement
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon total">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getTotalEvents() }}</div>
+            <div class="stat-label">Total événements</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon active">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getUpcomingEvents() }}</div>
+            <div class="stat-label">À venir</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon overdue">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getPastEvents() }}</div>
+            <div class="stat-label">Passés</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon new">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getUniqueOrganizers().length }}</div>
+            <div class="stat-label">Organisateurs uniques</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+      </div>
+      <p class="loading-text">Chargement des événements...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage && !isLoading" class="error-state">
+      <div class="error-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="15" y1="9" x2="9" y2="15"></line>
+          <line x1="9" y1="9" x2="15" y2="15"></line>
+        </svg>
+      </div>
+      <h3 class="error-title">Erreur de chargement</h3>
+      <p class="error-message">{{ errorMessage }}</p>
+      <button class="retry-button" (click)="loadEvents()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="1,4 1,10 7,10"></polyline>
+          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+        </svg>
+        Réessayer
+      </button>
+    </div>
+
+    <!-- Events Content -->
+    <div *ngIf="!isLoading && !errorMessage" class="events-content">
+
+      <!-- Filters and Search -->
+      <div class="filters-section">
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input
+              type="text"
+              placeholder="Rechercher par titre ou description..."
+              class="search-input"
+              [(ngModel)]="searchTerm"
+              (input)="onSearchChange()"
+            />
+            <button *ngIf="searchTerm" class="clear-search" (click)="clearSearch()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="filter-controls">
+          <div class="filter-group">
+            <label class="filter-label">Date :</label>
+            <input type="date" class="filter-select" [(ngModel)]="selectedDate" (change)="onFilterChange()">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Organisateur :</label>
+            <input type="text" class="filter-select" [(ngModel)]="selectedOrganizer" (change)="onFilterChange()" placeholder="ID organisateur">
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Info -->
+      <div class="results-info">
+        <p class="results-count">
+          {{ getFilteredEvents().length }} événement{{ getFilteredEvents().length !== 1 ? 's' : '' }}
+          <span *ngIf="searchTerm || selectedDate || selectedOrganizer">
+            ({{ events.length }} au total)
+          </span>
+        </p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="getFilteredEvents().length === 0" class="empty-state">
+        <div class="empty-icon">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <h3 class="empty-title">Aucun événement trouvé</h3>
+        <p class="empty-message">
+          <span *ngIf="searchTerm || selectedDate || selectedOrganizer">
+            Aucun événement ne correspond à vos critères de recherche.
+          </span>
+          <span *ngIf="!searchTerm && !selectedDate && !selectedOrganizer">
+            Il n'y a pas encore d'événements dans le système.
+          </span>
+        </p>
+        <button *ngIf="searchTerm || selectedDate || selectedOrganizer" class="clear-filters-button" (click)="clearAllFilters()">
+          Effacer les filtres
+        </button>
+        <button *ngIf="!searchTerm && !selectedDate && !selectedOrganizer" class="create-first-user-button" (click)="createEvent()">
+          Créer le premier événement
+        </button>
+      </div>
+
+      <!-- Events Table -->
+      <div *ngIf="getFilteredEvents().length > 0" class="events-table-container">
+        <table class="events-table">
+          <thead>
+            <tr>
+              <th>Titre</th>
+              <th>Description</th>
+              <th>Date début</th>
+              <th>Date fin</th>
+              <th>Image</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let event of getFilteredEvents(); trackBy: trackByEventId" (click)="viewEvent(event.id)" class="event-row">
+              <td>{{ event.title }}</td>
+              <td>{{ event.description }}</td>
+              <td>{{ event.startDate | date:'dd/MM/yyyy' }}</td>
+              <td>{{ event.endDate | date:'dd/MM/yyyy' }}</td>
+              <td>
+                <img *ngIf="event.imageUrl" [src]="event.imageUrl" alt="Event Image" width="80" height="48" style="object-fit:cover; border-radius:8px;" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" [class.show]="showToast" [class]="toastType">
+    <div class="toast-icon">
+      <svg *ngIf="toastType === 'success'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20,6 9,17 4,12"></polyline>
+      </svg>
+      <svg *ngIf="toastType === 'error'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="15" y1="9" x2="9" y2="15"></line>
+        <line x1="9" y1="9" x2="15" y2="15"></line>
+      </svg>
+    </div>
+    <span class="toast-message">{{ toastMessage }}</span>
+  </div>
+</div>

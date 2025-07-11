@@ -1,0 +1,184 @@
+<!-- Mobile Overlay -->
+<div 
+  *ngIf="isMobile && isMobileOpen" 
+  class="sidebar-overlay"
+  (click)="closeMobileSidebar()"
+></div>
+
+<!-- Sidebar Container -->
+<aside 
+  class="sidebar"
+  [class.sidebar--collapsed]="isCollapsed && !isMobile"
+  [class.sidebar--mobile]="isMobile"
+  [@sidebarAnimation]="isCollapsed && !isMobile ? 'collapsed' : 'expanded'"
+  [@mobileAnimation]="isMobile ? (isMobileOpen ? 'open' : 'closed') : 'open'"
+>
+  <!-- Header -->
+  <div class="sidebar__header">
+    <div class="sidebar__logo" [@contentAnimation]="isCollapsed && !isMobile ? 'hidden' : 'visible'">
+      <div class="logo__icon">
+        <span class="material-icons">school</span>
+      </div>
+      <div class="logo__text">
+        <h1>EduManager</h1>
+        <p>Système de gestion</p>
+      </div>
+    </div>
+    
+    <button 
+      class="sidebar__toggle"
+      (click)="toggleSidebar()"
+      [attr.aria-label]="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+      type="button"
+    >
+      <span class="material-icons">
+        {{ isMobile ? 'close' : (isCollapsed ? 'chevron_right' : 'chevron_left') }}
+      </span>
+    </button>
+  </div>
+
+  <!-- Search Bar -->
+  <div 
+    class="sidebar__search" 
+    [@contentAnimation]="isCollapsed && !isMobile ? 'hidden' : 'visible'"
+  >
+    <div class="search__container">
+      <span class="material-icons search__icon">search</span>
+      <input 
+        type="text" 
+        class="search__input"
+        placeholder="Rechercher..."
+        [(ngModel)]="searchQuery"
+        (input)="onSearchChange($event)"
+      >
+      <button 
+        *ngIf="searchQuery" 
+        class="search__clear"
+        (click)="clearSearch()"
+        type="button"
+      >
+        <span class="material-icons">close</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="sidebar__nav">
+    <div class="nav__content">
+      <div 
+        *ngFor="let category of getFilteredCategories(); trackBy: trackByCategory" 
+        class="nav__category"
+        [class.nav__category--expanded]="isCategoryExpanded(category.id)"
+        [class.nav__category--has-active]="hasActiveLink(category.id)"
+      >
+        <!-- Category Header -->
+        <button
+          class="category__header"
+          [class.category__header--always-expanded]="category.alwaysExpanded"
+          [class.category__header--active]="hasActiveLink(category.id)"
+          (click)="toggleCategory(category.id)"
+          [attr.aria-expanded]="isCategoryExpanded(category.id)"
+          [disabled]="category.alwaysExpanded"
+          type="button"
+        >
+          <div class="category__info">
+            <span class="material-icons category__icon">{{ category.icon }}</span>
+            <span 
+              class="category__title" 
+              [@contentAnimation]="isCollapsed && !isMobile ? 'hidden' : 'visible'"
+            >
+              {{ category.name }}
+            </span>
+            <span 
+              *ngIf="getCategoryItemCount(category.id) > 0"
+              class="category__count"
+              [@contentAnimation]="isCollapsed && !isMobile ? 'hidden' : 'visible'"
+            >
+              {{ getCategoryItemCount(category.id) }}
+            </span>
+          </div>
+          
+          <span 
+            *ngIf="!category.alwaysExpanded"
+            class="category__chevron material-icons"
+            [@contentAnimation]="isCollapsed && !isMobile ? 'hidden' : 'visible'"
+            [class.category__chevron--expanded]="isCategoryExpanded(category.id)"
+          >
+            expand_more
+          </span>
+        </button>
+
+        <!-- Category Links -->
+        <div 
+          class="category__links"
+          [@accordionAnimation]="isCategoryExpanded(category.id) ? 'expanded' : 'collapsed'"
+        >
+          <div class="category__links-content">
+            <div 
+              *ngFor="let link of getLinksByCategory(category.id); trackBy: trackByLink"
+              class="nav__item" 
+              [class.nav__item--active]="isRouteActive(link.route)"
+            >
+              <button
+                class="nav__link"
+                [class.nav__link--active]="isRouteActive(link.route)"
+                (click)="navigate(link.route)"
+                [attr.aria-label]="link.label"
+                type="button"
+              >
+                <span class="nav__icon material-icons">{{ link.icon }}</span>
+                
+                <span 
+                  class="nav__content" 
+                  [@contentAnimation]="isCollapsed && !isMobile ? 'hidden' : 'visible'"
+                >
+                  <span class="nav__label">{{ link.label }}</span>
+                  <span *ngIf="link.badge" class="nav__badge">{{ link.badge }}</span>
+                </span>
+              </button>
+
+              <!-- Active Indicator -->
+              <div 
+                *ngIf="isRouteActive(link.route)" 
+                class="nav__indicator"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- No Results Message -->
+      <div 
+        *ngIf="searchQuery && getFilteredCategories().length === 0" 
+        class="nav__no-results"
+        [@contentAnimation]="isCollapsed && !isMobile ? 'hidden' : 'visible'"
+      >
+        <span class="material-icons">search_off</span>
+        <p>Aucun résultat trouvé</p>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Footer -->
+  <div class="sidebar__footer">
+    <button class="footer__btn" (click)="navigate('/settings')" type="button">
+      <span class="nav__icon material-icons">settings</span>
+      <span 
+        class="nav__content" 
+        [@contentAnimation]="isCollapsed && !isMobile ? 'hidden' : 'visible'"
+      >
+        <span class="nav__label">Paramètres</span>
+      </span>
+    </button>
+
+    <button class="footer__btn footer__btn--logout" type="button"(click)="logout()">
+      <span class="nav__icon material-icons">logout</span>
+      <span 
+        class="nav__content" 
+        [@contentAnimation]="isCollapsed && !isMobile ? 'hidden' : 'visible'"
+      >
+        <span class="nav__label" >Déconnexion</span>
+      </span>
+    </button>
+  </div>
+</aside>

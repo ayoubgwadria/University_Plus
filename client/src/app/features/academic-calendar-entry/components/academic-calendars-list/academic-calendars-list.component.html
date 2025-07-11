@@ -1,0 +1,203 @@
+<div class="academic-calendar-list-wrapper">
+  <div class="academic-calendar-list-container">
+
+    <!-- Header Section -->
+    <div class="page-header">
+      <div class="header-content">
+        <div class="header-info">
+          <h1 class="page-title">Gestion du calendrier académique</h1>
+          <p class="page-subtitle">Gérez et consultez toutes les entrées du calendrier</p>
+        </div>
+        <div class="header-actions">
+          <button class="action-button primary" (click)="createEntry()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <path d="M9 12l2 2 4-4"></path>
+            </svg>
+            Nouvelle entrée
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon total">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getTotalEntries() }}</div>
+            <div class="stat-label">Total entrées</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon active">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getTodayEntries() }}</div>
+            <div class="stat-label">Aujourd'hui</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon new">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getUniqueDates().length }}</div>
+            <div class="stat-label">Jours uniques</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+      </div>
+      <p class="loading-text">Chargement des entrées...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage && !isLoading" class="error-state">
+      <div class="error-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="15" y1="9" x2="9" y2="15"></line>
+          <line x1="9" y1="9" x2="15" y2="15"></line>
+        </svg>
+      </div>
+      <h3 class="error-title">Erreur de chargement</h3>
+      <p class="error-message">{{ errorMessage }}</p>
+      <button class="retry-button" (click)="loadCalendarEntries()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="1,4 1,10 7,10"></polyline>
+          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+        </svg>
+        Réessayer
+      </button>
+    </div>
+
+    <!-- Calendar Entries Content -->
+    <div *ngIf="!isLoading && !errorMessage" class="academic-calendar-content">
+
+      <!-- Filters and Search -->
+      <div class="filters-section">
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input
+              type="text"
+              placeholder="Rechercher par titre ou description..."
+              class="search-input"
+              [(ngModel)]="searchTerm"
+              (input)="onSearchChange()"
+            />
+            <button *ngIf="searchTerm" class="clear-search" (click)="clearSearch()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="filter-controls">
+          <div class="filter-group">
+            <label class="filter-label">Date de début :</label>
+            <input type="date" class="filter-select" [(ngModel)]="selectedDate" (change)="onFilterChange()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Info -->
+      <div class="results-info">
+        <p class="results-count">
+          {{ getFilteredEntries().length }} entrée{{ getFilteredEntries().length !== 1 ? 's' : '' }}
+          <span *ngIf="searchTerm || selectedDate">
+            ({{ calendarEntries.length }} au total)
+          </span>
+        </p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="getFilteredEntries().length === 0" class="empty-state">
+        <div class="empty-icon">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          </svg>
+        </div>
+        <h3 class="empty-title">Aucune entrée trouvée</h3>
+        <p class="empty-message">
+          <span *ngIf="searchTerm || selectedDate">
+            Aucune entrée ne correspond à vos critères de recherche.
+          </span>
+          <span *ngIf="!searchTerm && !selectedDate">
+            Il n'y a pas encore d'entrées dans le calendrier.
+          </span>
+        </p>
+        <button *ngIf="searchTerm || selectedDate" class="clear-filters-button" (click)="clearAllFilters()">
+          Effacer les filtres
+        </button>
+        <button *ngIf="!searchTerm && !selectedDate" class="create-first-user-button" (click)="createEntry()">
+          Créer la première entrée
+        </button>
+      </div>
+
+      <!-- Calendar Entries Table -->
+      <div *ngIf="getFilteredEntries().length > 0" class="academic-calendar-table-container">
+        <table class="academic-calendar-table">
+          <thead>
+            <tr>
+              <th>Titre</th>
+              <th>Date de début</th>
+              <th>Date de fin</th>
+              <th>Description</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let entry of getFilteredEntries(); trackBy: trackByEntryId" (click)="viewEntry(entry.id)" class="calendar-row">
+              <td>{{ entry.title }}</td>
+              <td>{{ entry.startDate }}</td>
+              <td>{{ entry.endDate }}</td>
+              <td>{{ entry.description }}</td>
+              <td>
+                <button class="table-action-btn danger" (click)="deleteEntry(entry.id); $event.stopPropagation()" title="Supprimer">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3,6 5,6 21,6"></polyline>
+                    <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2v2"></path>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" [class.show]="showToast" [class]="toastType">
+    <div class="toast-icon">
+      <svg *ngIf="toastType === 'success'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20,6 9,17 4,12"></polyline>
+      </svg>
+      <svg *ngIf="toastType === 'error'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="15" y1="9" x2="9" y2="15"></line>
+        <line x1="9" y1="9" x2="15" y2="15"></line>
+      </svg>
+    </div>
+    <span class="toast-message">{{ toastMessage }}</span>
+  </div>
+</div>

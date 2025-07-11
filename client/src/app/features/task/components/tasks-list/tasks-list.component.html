@@ -1,0 +1,219 @@
+<div class="tasks-list-wrapper">
+  <div class="tasks-list-container">
+
+    <!-- Header Section -->
+    <div class="page-header">
+      <div class="header-content">
+        <div class="header-info">
+          <h1 class="page-title">Gestion des tâches</h1>
+          <p class="page-subtitle">Gérez et consultez toutes les tâches du système</p>
+        </div>
+        <div class="header-actions">
+          <button class="action-button primary" (click)="createTask()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <circle cx="12" cy="7" r="4"></circle>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            Nouvelle tâche
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon total">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getTotalTasks() }}</div>
+            <div class="stat-label">Total tâches</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon active">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getUpcomingTasks() }}</div>
+            <div class="stat-label">À venir</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon overdue">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getOverdueTasks() }}</div>
+            <div class="stat-label">En retard</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon new">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getCreatedToday() }}</div>
+            <div class="stat-label">Créées aujourd'hui</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+      </div>
+      <p class="loading-text">Chargement des tâches...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="errorMessage && !isLoading" class="error-state">
+      <div class="error-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="15" y1="9" x2="9" y2="15"></line>
+          <line x1="9" y1="9" x2="15" y2="15"></line>
+        </svg>
+      </div>
+      <h3 class="error-title">Erreur de chargement</h3>
+      <p class="error-message">{{ errorMessage }}</p>
+      <button class="retry-button" (click)="loadTasks()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="1,4 1,10 7,10"></polyline>
+          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+        </svg>
+        Réessayer
+      </button>
+    </div>
+
+    <!-- Tasks Content -->
+    <div *ngIf="!isLoading && !errorMessage" class="tasks-content">
+
+      <!-- Filters and Search -->
+      <div class="filters-section">
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input
+              type="text"
+              placeholder="Rechercher par titre ou description..."
+              class="search-input"
+              [(ngModel)]="searchTerm"
+              (input)="onSearchChange()"
+            />
+            <button *ngIf="searchTerm" class="clear-search" (click)="clearSearch()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="filter-controls">
+          <div class="filter-group">
+            <label class="filter-label">Cours :</label>
+            <input type="number" class="filter-select" [(ngModel)]="selectedCourseId" (change)="onFilterChange()" placeholder="ID du cours">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Créateur :</label>
+            <input type="number" class="filter-select" [(ngModel)]="selectedCreatorId" (change)="onFilterChange()" placeholder="ID utilisateur">
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Info -->
+      <div class="results-info">
+        <p class="results-count">
+          {{ getFilteredTasks().length }} tâche{{ getFilteredTasks().length !== 1 ? 's' : '' }}
+          <span *ngIf="searchTerm || selectedCourseId || selectedCreatorId">
+            ({{ tasks.length }} au total)
+          </span>
+        </p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="getFilteredTasks().length === 0" class="empty-state">
+        <div class="empty-icon">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <h3 class="empty-title">Aucune tâche trouvée</h3>
+        <p class="empty-message">
+          <span *ngIf="searchTerm || selectedCourseId || selectedCreatorId">
+            Aucune tâche ne correspond à vos critères de recherche.
+          </span>
+          <span *ngIf="!searchTerm && !selectedCourseId && !selectedCreatorId">
+            Il n'y a pas encore de tâches dans le système.
+          </span>
+        </p>
+        <button *ngIf="searchTerm || selectedCourseId || selectedCreatorId" class="clear-filters-button" (click)="clearAllFilters()">
+          Effacer les filtres
+        </button>
+        <button *ngIf="!searchTerm && !selectedCourseId && !selectedCreatorId" class="create-first-user-button" (click)="createTask()">
+          Créer la première tâche
+        </button>
+      </div>
+
+      <!-- Tasks Table -->
+      <div *ngIf="getFilteredTasks().length > 0" class="tasks-table-container">
+        <table class="tasks-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Titre</th>
+              <th>Description</th>
+              <th>Date d'échéance</th>
+              <th>ID du cours</th>
+              <th>Créé par</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let task of getFilteredTasks(); trackBy: trackByTaskId" (click)="viewTask(task.id)" class="task-row">
+              <td>{{ task.id }}</td>
+              <td>{{ task.title }}</td>
+              <td>{{ task.description }}</td>
+              <td>{{ task.dueDate | date:'dd/MM/yyyy' }}</td>
+              <td>{{ task.courseId ?? '—' }}</td>
+              <td>{{ task.createdById ?? '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" [class.show]="showToast" [class]="toastType">
+    <div class="toast-icon">
+      <svg *ngIf="toastType === 'success'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="20,6 9,17 4,12"></polyline>
+      </svg>
+      <svg *ngIf="toastType === 'error'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="15" y1="9" x2="9" y2="15"></line>
+        <line x1="9" y1="9" x2="15" y2="15"></line>
+      </svg>
+    </div>
+    <span class="toast-message">{{ toastMessage }}</span>
+  </div>
+</div>
