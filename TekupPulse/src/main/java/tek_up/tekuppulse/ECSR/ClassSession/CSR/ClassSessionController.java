@@ -42,4 +42,9 @@ public class ClassSessionController {
         service.deleteSession(id);
         return ResponseEntity.noContent().build();
     }
+    @PatchMapping("/{id}/increment-absence")
+    public ResponseEntity<ClassSessionResponseDTO> incrementAbsence(@PathVariable Long id) {
+        ClassSessionResponseDTO updated = service.incrementAbsentCount(id);
+        return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
+    }
 }

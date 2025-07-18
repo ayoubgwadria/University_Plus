@@ -8,4 +8,5 @@ export interface ClassSessionResponseDTO {
   integratedClassroom: boolean;
   teacherId?: number | null;
   groupId?: number | null;
+  absentCount?: number;
 }

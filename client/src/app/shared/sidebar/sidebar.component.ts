@@ -2,7 +2,14 @@ import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil, filter } from 'rxjs/operators';
-import { trigger, state, style, transition, animate } from '@angular/animations';
+import {
+  trigger,
+  state,
+  style,
+  transition,
+  animate,
+} from '@angular/animations';
+import { UserService } from '../../features/user/services/user.service';
 
 export interface SidebarLink {
   id: string;
@@ -31,153 +38,83 @@ export interface SidebarCategory {
     trigger('sidebarAnimation', [
       state('expanded', style({ width: '280px' })),
       state('collapsed', style({ width: '72px' })),
-      transition('expanded <=> collapsed', animate('300ms cubic-bezier(0.4, 0, 0.2, 1)'))
+      transition(
+        'expanded <=> collapsed',
+        animate('300ms cubic-bezier(0.4, 0, 0.2, 1)')
+      ),
     ]),
     trigger('contentAnimation', [
       state('visible', style({ opacity: 1, transform: 'translateX(0)' })),
       state('hidden', style({ opacity: 0, transform: 'translateX(-10px)' })),
-      transition('visible <=> hidden', animate('200ms cubic-bezier(0.4, 0, 0.2, 1)'))
+      transition(
+        'visible <=> hidden',
+        animate('200ms cubic-bezier(0.4, 0, 0.2, 1)')
+      ),
     ]),
     trigger('mobileAnimation', [
       state('open', style({ transform: 'translateX(0)' })),
       state('closed', style({ transform: 'translateX(-100%)' })),
-      transition('open <=> closed', animate('300ms cubic-bezier(0.4, 0, 0.2, 1)'))
+      transition(
+        'open <=> closed',
+        animate('300ms cubic-bezier(0.4, 0, 0.2, 1)')
+      ),
     ]),
     trigger('accordionAnimation', [
       state('expanded', style({ height: '*', opacity: 1 })),
       state('collapsed', style({ height: '0px', opacity: 0 })),
-      transition('expanded <=> collapsed', animate('250ms cubic-bezier(0.4, 0, 0.2, 1)'))
-    ])
-  ]
+      transition(
+        'expanded <=> collapsed',
+        animate('250ms cubic-bezier(0.4, 0, 0.2, 1)')
+      ),
+    ]),
+  ],
 })
 export class SidebarComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-  
+
   isCollapsed = false;
   isMobileOpen = false;
   isMobile = false;
   currentRoute = '';
-  activeCategory: string | null = 'dashboard'; // Only one category active at a time
+  activeCategory: string | null = 'dashboard';
   searchQuery = '';
+  role = '';
+  logedIn = false;
 
-  categories: SidebarCategory[] = [
+  allCategories: SidebarCategory[] = [
     { id: 'dashboard', name: 'Tableau de bord', order: 1, icon: 'dashboard', alwaysExpanded: true },
     { id: 'academic', name: 'Académique', order: 2, icon: 'school' },
     { id: 'management', name: 'Gestion', order: 3, icon: 'people' },
     { id: 'planning', name: 'Planning', order: 4, icon: 'schedule' },
     { id: 'evaluation', name: 'Évaluation', order: 5, icon: 'assessment' },
-    { id: 'communication', name: 'Communication', order: 6, icon: 'chat' }
+    { id: 'communication', name: 'Communication', order: 6, icon: 'chat' },
   ];
 
-  sidebarLinks: SidebarLink[] = [
-    {
-      id: 'dashboard',
-      label: 'Dashboard',
-      icon: 'dashboard',
-      route: '/dashboard',
-      category: 'dashboard'
-    },
-    {
-      id: 'courses',
-      label: 'Cours',
-      icon: 'book',
-      route: '/course/list',
-      category: 'academic'
-    },
-    {
-      id: 'course-materials',
-      label: 'Supports de cours',
-      icon: 'library_books',
-      route: '/coursematerial/list',
-      category: 'academic'
-    },
-    {
-      id: 'documents',
-      label: 'Documents',
-      icon: 'description',
-      route: '/document/list',
-      category: 'academic'
-    },
-    {
-      id: 'students',
-      label: 'Étudiants',
-      icon: 'school',
-      route: '/user/list',
-      category: 'management',
-      badge: 12
-    },
-    {
-      id: 'teachers',
-      label: 'Enseignants',
-      icon: 'person',
-      route: '/user/list',
-      category: 'management'
-    },
-    {
-      id: 'groups',
-      label: 'Groupes',
-      icon: 'group',
-      route: '/group/list',
-      category: 'management'
-    },
-    {
-      id: 'schedule',
-      label: 'Emploi du temps',
-      icon: 'schedule',
-      route: '/examplan/list',
-      category: 'planning'
-    },
-    {
-      id: 'exams',
-      label: 'Examens',
-      icon: 'quiz',
-      route: '/examplan/list',
-      category: 'planning'
-    },
-    {
-      id: 'events',
-      label: 'Événements',
-      icon: 'event',
-      route: '/event/list',
-      category: 'planning'
-    },
-    {
-      id: 'grades',
-      label: 'Notes',
-      icon: 'star',
-      route: '/grade/list',
-      category: 'evaluation'
-    },
-    {
-      id: 'attendance',
-      label: 'Présences',
-      icon: 'how_to_reg',
-      route: '/attendance',
-      category: 'evaluation'
-    },
-    {
-      id: 'messages',
-      label: 'Messages',
-      icon: 'message',
-      route: '/messages',
-      category: 'communication',
-      badge: 5
-    },
-    {
-      id: 'announcements',
-      label: 'Annonces',
-      icon: 'campaign',
-      route: '/announcements',
-      category: 'communication'
-    }
+  allSidebarLinks: SidebarLink[] = [
+    { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', route: '/dashboard', category: 'dashboard' },
+    { id: 'courses', label: 'Cours', icon: 'book', route: '/course/list', category: 'academic' },
+    { id: 'course-materials', label: 'Supports de cours', icon: 'library_books', route: '/coursematerial/list', category: 'academic' },
+    { id: 'documents', label: 'Documents', icon: 'description', route: '/document/list', category: 'academic' },
+    { id: 'students', label: 'Utilisateurs', icon: 'school', route: '/user/list', category: 'management', badge: 12 },
+    { id: 'groups', label: 'Groupes', icon: 'group', route: '/group/list', category: 'management' },
+    { id: 'classsessions', label: 'Class Sessions', icon: 'class', route: '/classsession/list', category: 'management' },
+    { id: 'schedule', label: 'Emploi du temps', icon: 'schedule', route: '/academiccalendar/list', category: 'planning' },
+    { id: 'exams', label: 'Examens', icon: 'quiz', route: '/examplan/list', category: 'planning' },
+    { id: 'events', label: 'Événements', icon: 'event', route: '/event/list', category: 'planning' },
+    { id: 'grades', label: 'Notes', icon: 'star', route: '/grade/list', category: 'evaluation' },
+    { id: 'attendance', label: 'Présences', icon: 'how_to_reg', route: '/absence/list', category: 'evaluation' },
+    { id: 'messages', label: 'Messages', icon: 'message', route: '/messages', category: 'communication', badge: 5 },
+    { id: 'announcements', label: 'Annonces', icon: 'campaign', route: '/announcements', category: 'communication' },
   ];
 
-  constructor(private router: Router) {
+  sidebarLinks: SidebarLink[] = [];
+  sidebarCategories: SidebarCategory[] = [];
+
+  constructor(private router: Router, private userService: UserService) {
     this.checkScreenSize();
   }
 
   ngOnInit(): void {
-    // Listen to route changes
     this.router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd),
@@ -188,9 +125,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.setActiveCategoryFromRoute();
       });
 
-    // Set initial route
     this.currentRoute = this.router.url;
     this.setActiveCategoryFromRoute();
+    this.role = this.userService.getUserRole() || '';
+    this.logedIn = this.userService.isLoggedIn();
+
+    this.filterSidebarByRole();
   }
 
   ngOnDestroy(): void {
@@ -211,30 +151,26 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   private setActiveCategoryFromRoute(): void {
-    const activeLink = this.sidebarLinks.find(link => this.isRouteActive(link.route));
-    if (activeLink && !this.categories.find(cat => cat.id === activeLink.category)?.alwaysExpanded) {
+    const activeLink = this.sidebarLinks.find((link) =>
+      this.isRouteActive(link.route)
+    );
+    if (
+      activeLink &&
+      !this.sidebarCategories.find((cat) => cat.id === activeLink.category)
+        ?.alwaysExpanded
+    ) {
       this.activeCategory = activeLink.category;
     }
   }
 
   toggleSidebar(): void {
-    if (this.isMobile) {
-      this.isMobileOpen = !this.isMobileOpen;
-    } else {
-      this.isCollapsed = !this.isCollapsed;
-    }
+    this.isMobile ? this.isMobileOpen = !this.isMobileOpen : this.isCollapsed = !this.isCollapsed;
   }
 
   toggleCategory(categoryId: string): void {
-    const category = this.categories.find(cat => cat.id === categoryId);
+    const category = this.sidebarCategories.find((cat) => cat.id === categoryId);
     if (category?.alwaysExpanded) return;
-
-    // Accordion behavior - only one category open at a time
-    if (this.activeCategory === categoryId) {
-      this.activeCategory = null;
-    } else {
-      this.activeCategory = categoryId;
-    }
+    this.activeCategory = this.activeCategory === categoryId ? null : categoryId;
   }
 
   navigate(route: string): void {
@@ -244,39 +180,31 @@ export class SidebarComponent implements OnInit, OnDestroy {
     }
   }
 
-  isRouteActive(linkRoute: string, currentRoute: string = this.currentRoute): boolean {
+  isRouteActive(linkRoute: string): boolean {
     if (linkRoute === '/dashboard') {
-      return currentRoute === '/' || currentRoute === '/dashboard';
+      return this.currentRoute === '/' || this.currentRoute === '/dashboard';
     }
-    return currentRoute.startsWith(linkRoute);
+    return this.currentRoute.startsWith(linkRoute);
   }
 
   isCategoryExpanded(categoryId: string): boolean {
-    const category = this.categories.find(cat => cat.id === categoryId);
+    const category = this.sidebarCategories.find((cat) => cat.id === categoryId);
     return category?.alwaysExpanded || this.activeCategory === categoryId;
   }
 
   getLinksByCategory(categoryId: string): SidebarLink[] {
     const links = this.sidebarLinks.filter(link => link.category === categoryId);
-    
-    // Filter by search query if exists
-    if (this.searchQuery.trim()) {
-      return links.filter(link => 
-        link.label.toLowerCase().includes(this.searchQuery.toLowerCase())
-      );
-    }
-    
-    return links;
+    return this.searchQuery.trim()
+      ? links.filter(link => link.label.toLowerCase().includes(this.searchQuery.toLowerCase()))
+      : links;
   }
 
   getFilteredCategories(): SidebarCategory[] {
     if (!this.searchQuery.trim()) {
-      return this.categories;
+      return this.sidebarCategories;
     }
-    
-    // Show categories that have matching links
-    return this.categories.filter(category => 
-      this.getLinksByCategory(category.id).length > 0
+    return this.sidebarCategories.filter(
+      (category) => this.getLinksByCategory(category.id).length > 0
     );
   }
 
@@ -285,15 +213,15 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   hasActiveLink(categoryId: string): boolean {
-    return this.getLinksByCategory(categoryId).some(link => this.isRouteActive(link.route));
+    return this.getLinksByCategory(categoryId).some(link =>
+      this.isRouteActive(link.route)
+    );
   }
 
   onSearchChange(event: any): void {
-    // Defensive: event.target may be null, so check before accessing value
-    const value = event && event.target ? event.target.value : '';
+    const value = event?.target?.value || '';
     this.searchQuery = value;
 
-    // If searching, expand all categories with results
     if (value.trim()) {
       const categoriesWithResults = this.getFilteredCategories();
       if (categoriesWithResults.length === 1) {
@@ -319,8 +247,28 @@ export class SidebarComponent implements OnInit, OnDestroy {
   trackByLink(index: number, link: SidebarLink): string {
     return link.id;
   }
-  logout():void{
+
+  logout(): void {
     localStorage.clear();
     this.router.navigate(['/user/login']);
+    this.logedIn = false;
+  }
+
+  private filterSidebarByRole(): void {
+    if (this.role === 'PROFESSOR') {
+      // Only allow academic materials for professor
+      const allowedLinkIds = ['course-materials', 'documents'];
+      this.sidebarLinks = this.allSidebarLinks.filter(link =>
+        allowedLinkIds.includes(link.id)
+      );
+    } else {
+      this.sidebarLinks = this.allSidebarLinks;
+    }
+
+    // Only include categories that have links
+    const allowedCategoryIds = new Set(this.sidebarLinks.map(link => link.category));
+    this.sidebarCategories = this.allCategories.filter(cat =>
+      allowedCategoryIds.has(cat.id)
+    );
   }
 }

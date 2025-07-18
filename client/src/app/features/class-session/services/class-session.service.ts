@@ -32,4 +32,7 @@ export class ClassSessionService {
   delete(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+  incrementAbsence(sessionId: number) {
+  return this.http.patch<ClassSessionResponseDTO>(`${this.apiUrl}/${sessionId}/increment-absence`, sessionId);
+}
 }

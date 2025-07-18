@@ -28,6 +28,8 @@ public class ClassSession {
     private LocalTime endTime;
     private String room;
     private boolean integratedClassroom;
+    @Column(name = "absent_count")
+    private long absentCount = 0;
 
     @ManyToOne
     private User teacher;

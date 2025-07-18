@@ -107,7 +107,7 @@ export class DocumentsListComponent implements OnInit {
   }
 
   createDocument(): void {
-    this.router.navigate(['/documents/create']);
+    this.router.navigate(['/document/create']);
   }
 
   viewDocument(id?: number): void {

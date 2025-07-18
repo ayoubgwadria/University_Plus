@@ -1,7 +1,6 @@
-import { Component } from '@angular/core';
-import { AbsenceResponseDTO } from '../../DTO/AbsenceResponseDTO';
-import { AbsenceService } from '../../services/absence.service';
-import { Router } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { ClassSessionResponseDTO } from '../../../class-session/DTO/ClassSessionResponseDTO';
+import { ClassSessionService } from '../../../class-session/services/class-session.service';
 
 @Component({
   selector: 'app-absences-list',
@@ -9,9 +8,9 @@ import { Router } from '@angular/router';
   templateUrl: './absences-list.component.html',
   styleUrl: './absences-list.component.css'
 })
-export class AbsencesListComponent {
-  absences: AbsenceResponseDTO[] = [];
-  filteredAbsences: AbsenceResponseDTO[] = [];
+export class AbsencesListComponent implements OnInit {
+  classSessions: ClassSessionResponseDTO[] = [];
+  filteredClassSessions: ClassSessionResponseDTO[] = [];
   isLoading = true;
   errorMessage: string | null = null;
 
@@ -24,24 +23,24 @@ export class AbsencesListComponent {
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
 
-  constructor(private absenceService: AbsenceService, private router: Router) {}
+  constructor(private classSessionService: ClassSessionService) {}
 
   ngOnInit(): void {
-    this.loadAbsences();
+    this.loadClassSessions();
   }
 
-  loadAbsences(): void {
+  loadClassSessions() {
     this.isLoading = true;
     this.errorMessage = null;
-    this.absenceService.getAll().subscribe({
+    this.classSessionService.getAll().subscribe({
       next: (data) => {
-        this.absences = data;
-        this.filteredAbsences = [...data];
+        this.classSessions = data;
+        this.filteredClassSessions = [...data];
         this.applyFilters();
         this.isLoading = false;
       },
-      error: (err) => {
-        this.errorMessage = 'Erreur lors du chargement des absences.';
+      error: (error) => {
+        this.errorMessage = 'Erreur lors du chargement des séances.';
         this.isLoading = false;
       }
     });
@@ -67,32 +66,31 @@ export class AbsencesListComponent {
   }
 
   applyFilters(): void {
-    let filtered = [...this.absences];
+    let filtered = [...this.classSessions];
 
     // Search filter
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(abs =>
-        (abs.reason && abs.reason.toLowerCase().includes(term)) ||
-        (abs.studentId && abs.studentId.toString().includes(term)) ||
-        (abs.courseId && abs.courseId.toString().includes(term))
+      filtered = filtered.filter(cs =>
+        (cs.subjectName && cs.subjectName.toLowerCase().includes(term)) ||
+        (cs.room && cs.room.toLowerCase().includes(term))
       );
     }
 
     // Date filter
     if (this.selectedDate) {
-      filtered = filtered.filter(abs => abs.date?.slice(0, 10) === this.selectedDate);
+      filtered = filtered.filter(cs => cs.date?.slice(0, 10) === this.selectedDate);
     }
 
-    this.filteredAbsences = filtered;
+    this.filteredClassSessions = filtered;
   }
 
-  getFilteredAbsences(): AbsenceResponseDTO[] {
-    return this.filteredAbsences;
+  getFilteredClassSessions(): ClassSessionResponseDTO[] {
+    return this.filteredClassSessions;
   }
 
-  trackByAbsenceId(index: number, abs: AbsenceResponseDTO): number {
-    return abs.id ?? index;
+  trackByClassSessionId(index: number, cs: ClassSessionResponseDTO): number {
+    return cs.id ?? index;
   }
 
   showToastMessage(message: string, type: 'success' | 'error') {
@@ -104,43 +102,33 @@ export class AbsencesListComponent {
     }, 3000);
   }
 
-  createAbsence(): void {
-    this.router.navigate(['/absences/create']);
-  }
-
-  viewDetails(id: number): void {
-    this.router.navigate(['/absences', id]);
-  }
-
-  editAbsence(id: number): void {
-    this.router.navigate(['/absences/edit', id]);
-  }
-
-  deleteAbsence(id: number): void {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette absence ?')) {
-      this.absenceService.delete(id).subscribe({
-        next: () => {
-          this.showToastMessage('Absence supprimée !', 'success');
-          this.loadAbsences();
-        },
-        error: () => {
-          this.showToastMessage('Erreur lors de la suppression', 'error');
-        }
-      });
-    }
-  }
-
   // Stats methods
-  getTotalAbsences(): number {
-    return this.absences.length;
+  getTotalClassSessions(): number {
+    return this.classSessions.length;
   }
 
-  getTodayAbsences(): number {
+  getTodayClassSessions(): number {
     const today = new Date().toISOString().slice(0, 10);
-    return this.absences.filter(abs => abs.date?.slice(0, 10) === today).length;
+    return this.classSessions.filter(cs => cs.date?.slice(0, 10) === today).length;
   }
 
   getUniqueDates(): string[] {
-    return Array.from(new Set(this.absences.map(a => a.date?.slice(0, 10)).filter(Boolean)));
+    return Array.from(new Set(this.classSessions.map(cs => cs.date?.slice(0, 10)).filter(Boolean)));
   }
+
+  incrementAbsence(sessionId: number) {
+  this.classSessionService.incrementAbsence(sessionId).subscribe({
+    next: (updated) => {
+      const index = this.classSessions.findIndex(cs => cs.id === sessionId);
+      if (index !== -1) {
+        this.classSessions[index] = updated;
+        this.applyFilters();
+        this.showToastMessage('Absence ajoutée avec succès.', 'success');
+      }
+    },
+    error: () => {
+      this.showToastMessage("Échec de l'ajout d'une absence.", 'error');
+    }
+  });
+}
 }

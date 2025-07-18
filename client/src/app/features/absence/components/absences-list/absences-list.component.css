@@ -1,11 +1,11 @@
-.absences-list-wrapper {
+.class-sessions-list-wrapper {
   min-height: 100vh;
   background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);
   padding: 24px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.absences-list-container {
+.class-sessions-list-container {
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -46,34 +46,6 @@
   font-size: 16px;
   color: #6b7280;
   font-weight: 400;
-}
-
-.header-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.action-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-}
-
-.action-button.primary {
-  background: #43cea2;
-  color: white;
-}
-
-.action-button.primary:hover {
-  background: #185a9d;
-  transform: translateY(-1px);
 }
 
 /* Stats Grid */
@@ -209,7 +181,7 @@
 }
 
 /* Content */
-.absences-content {
+.class-sessions-content {
   background: rgba(255, 255, 255, 0.97);
   backdrop-filter: blur(20px);
   border-radius: 24px;
@@ -359,8 +331,7 @@
   margin-bottom: 32px;
 }
 
-.clear-filters-button,
-.create-first-user-button {
+.clear-filters-button {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -371,9 +342,6 @@
   cursor: pointer;
   transition: all 0.2s ease;
   border: none;
-}
-
-.clear-filters-button {
   background: #f9fafb;
   color: #374151;
   border: 2px solid #e5e7eb;
@@ -384,30 +352,20 @@
   border-color: #d1d5db;
 }
 
-.create-first-user-button {
-  background: #43cea2;
-  color: white;
-}
-
-.create-first-user-button:hover {
-  background: #185a9d;
-  transform: translateY(-1px);
-}
-
 /* Table */
-.absences-table-container {
+.class-sessions-table-container {
   overflow-x: auto;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
 }
 
-.absences-table {
+.class-sessions-table {
   width: 100%;
   border-collapse: collapse;
   background: white;
 }
 
-.absences-table th {
+.class-sessions-table th {
   background: #f9fafb;
   padding: 16px;
   text-align: left;
@@ -417,61 +375,20 @@
   border-bottom: 1px solid #e5e7eb;
 }
 
-.absence-row {
+.class-session-row {
   transition: background-color 0.2s ease;
 }
 
-.absence-row:hover {
+.class-session-row:hover {
   background: #f9fafb;
 }
 
-.absences-table td {
+.class-sessions-table td {
   padding: 16px;
   border-bottom: 1px solid #f3f4f6;
   vertical-align: middle;
   font-size: 15px;
   color: #374151;
-}
-
-.table-action-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: none;
-  background: #f9fafb;
-  color: #6b7280;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.table-action-btn.info {
-  background: #e0f2fe;
-  color: #0369a1;
-}
-.table-action-btn.info:hover {
-  background: #bae6fd;
-  color: #0ea5e9;
-}
-
-.table-action-btn.warning {
-  background: #fef9c3;
-  color: #b45309;
-}
-.table-action-btn.warning:hover {
-  background: #fde68a;
-  color: #f59e42;
-}
-
-.table-action-btn.danger {
-  background: #fef2f2;
-  color: #991b1b;
-}
-.table-action-btn.danger:hover {
-  background: #fecaca;
-  color: #dc2626;
 }
 
 /* Toast Notification */
@@ -512,6 +429,30 @@
   flex-shrink: 0;
 }
 
+
+.action-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.action-button.primary {
+  background: #43cea2;
+  color: white;
+}
+
+.action-button.primary:hover {
+  background: #185a9d;
+  transform: translateY(-1px);
+}
+
 /* Responsive design */
 @media (max-width: 1024px) {
   .stats-grid {
@@ -522,17 +463,14 @@
     gap: 24px;
     align-items: stretch;
   }
-  .header-actions {
-    justify-content: center;
-  }
 }
 
 @media (max-width: 768px) {
-  .absences-list-wrapper {
+  .class-sessions-list-wrapper {
     padding: 16px;
   }
   .page-header,
-  .absences-content {
+  .class-sessions-content {
     padding: 32px 24px;
   }
   .stats-grid {
@@ -552,7 +490,7 @@
 
 @media (max-width: 480px) {
   .page-header,
-  .absences-content {
+  .class-sessions-content {
     padding: 24px 20px;
   }
   .header-info h1 {

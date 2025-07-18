@@ -54,6 +54,7 @@ export class UserService {
       .pipe(
         tap((res) => {
           localStorage.setItem('token', res.token);
+          localStorage.setItem('role', res.role);
         })
       );
   }
@@ -73,5 +74,9 @@ export class UserService {
   }
   deleteUser(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+  isLoggedIn(): boolean {
+    const token = localStorage.getItem('token');
+    return !!token && token.trim() !== '';
   }
 }

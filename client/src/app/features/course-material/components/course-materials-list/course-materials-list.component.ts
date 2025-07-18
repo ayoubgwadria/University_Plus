@@ -115,7 +115,7 @@ export class CourseMaterialsListComponent implements OnInit {
   }
 
   createMaterial(): void {
-    this.router.navigate(['/course-materials/create']);
+    this.router.navigate(['/coursematerial/create']);
   }
 
   viewDetails(id: number): void {

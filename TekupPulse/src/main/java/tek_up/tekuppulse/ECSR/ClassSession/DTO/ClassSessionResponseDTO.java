@@ -22,4 +22,5 @@ public class ClassSessionResponseDTO {
     private boolean integratedClassroom;
     private Long teacherId;
     private Long groupId;
+    private Long absentCount;
 }

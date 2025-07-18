@@ -1,14 +1,22 @@
 package tek_up.tekuppulse.ECSR.ClassSession.CSR;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import tek_up.tekuppulse.ECSR.ClassSession.ClassSession;
 import tek_up.tekuppulse.ECSR.ClassSession.DTO.ClassSessionRequestDTO;
 import tek_up.tekuppulse.ECSR.ClassSession.DTO.ClassSessionResponseDTO;
 import tek_up.tekuppulse.ECSR.Group.CSR.GroupRepository;
+import tek_up.tekuppulse.ECSR.Group.Group;
 import tek_up.tekuppulse.ECSR.User.CSR.UserRepository;
+import tek_up.tekuppulse.ECSR.User.Student;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,6 +25,7 @@ public class ClassSessionService {
     private final ClassSessionRepository classSessionRepository;
     private final UserRepository userRepository;
     private final GroupRepository groupRepository;
+    private final JavaMailSender mailSender;
 
     private ClassSessionResponseDTO toResponseDTO(ClassSession cs) {
         return ClassSessionResponseDTO.builder()
@@ -29,6 +38,7 @@ public class ClassSessionService {
                 .integratedClassroom(cs.isIntegratedClassroom())
                 .teacherId(cs.getTeacher() != null ? cs.getTeacher().getId() : null)
                 .groupId(cs.getGroup() != null ? cs.getGroup().getId() : null)
+                .absentCount(cs.getAbsentCount())
                 .build();
     }
 
@@ -96,4 +106,51 @@ public class ClassSessionService {
     public void deleteSession(Long id) {
         classSessionRepository.deleteById(id);
     }
+    public ClassSessionResponseDTO incrementAbsentCount(Long sessionId) {
+        return classSessionRepository.findById(sessionId).map(session -> {
+            session.setAbsentCount(session.getAbsentCount() + 1);
+            ClassSession updated = classSessionRepository.save(session);
+            return toResponseDTO(updated);
+        }).orElse(null);
+    }
+
+    @Scheduled(cron = "0 0 * * * *") // every hour on the hour
+    @Transactional
+    public void checkCollectiveAbsenceAndNotify() {
+        List<ClassSession> sessions = classSessionRepository.findAll();
+
+        for (ClassSession session : sessions) {
+            Group group = session.getGroup();
+            if (group == null || group.getStudents() == null) continue;
+
+            int totalStudents = group.getStudents().size();
+            if (session.getAbsentCount() > totalStudents - 1) {
+
+                // Avoid sending duplicates
+                Set<String> notifiedEmails = new HashSet<>();
+
+                for (Student student : group.getStudents()) {
+                    if (student.getEmail() != null && notifiedEmails.add(student.getEmail())) {
+                        sendCollectiveAbsenceEmail(student.getEmail(), session);
+                    }
+                }
+            }
+        }
+    }
+
+    private void sendCollectiveAbsenceEmail(String to, ClassSession session) {
+        String subject = "📢 Absence collective pour la séance: " + session.getSubjectName();
+        String text = "Bonjour,\n\nLa séance du " + session.getDate() +
+                " à " + session.getStartTime() + " semble avoir une absence collective.\n" +
+                "Merci de vérifier avec l'administration.\n\nSalle: " + session.getRoom();
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject(subject);
+        message.setText(text);
+
+        mailSender.send(message);
+    }
 }
+
+

@@ -21,6 +21,7 @@ public class AbsenceService {
     private final CourseRepository courseRepository;
     private final ClassSessionRepository sessionRepository;
 
+
     private AbsenceResponseDTO toDTO(Absence absence) {
         return AbsenceResponseDTO.builder()
                 .id(absence.getId())

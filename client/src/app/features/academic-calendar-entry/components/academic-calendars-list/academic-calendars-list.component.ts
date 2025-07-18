@@ -107,7 +107,7 @@ export class AcademicCalendarsListComponent implements OnInit {
   }
 
   createEntry(): void {
-    this.router.navigate(['/academic-calendar/create']);
+    this.router.navigate(['/academiccalendar/create']);
   }
 
   viewEntry(id?: number): void {
